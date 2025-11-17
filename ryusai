@@ -1,0 +1,916 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local LocalPlayer = Players.LocalPlayer
+
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "ryuma hub🃏",
+    SubTitle = "six sayven📈📉",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.RightShift
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "rbxassetid://4483362458" }),
+    Player = Window:AddTab({ Title = "Player", Icon = "rbxassetid://4483362458" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "rbxassetid://4483362458" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "rbxassetid://4483362458" }),
+    Extras = Window:AddTab({ Title = "Extras", Icon = "rbxassetid://4483362458" })
+}
+
+local function safeNotify(title, content, dur)
+    Fluent:Notify({ Title = title, Content = content or "", Duration = dur or 4 })
+end
+
+local function safeRunAsync(fn)
+    spawn(function()
+        pcall(fn)
+    end)
+end
+
+local MainSection = Tabs.Main:AddSection("Core Features")
+
+MainSection:AddButton({
+    Title = "Load Infinite Yield",
+    Description = "Loads Infinite Yield admin script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        end)
+    end
+})
+
+local ESPEnabled = false
+local espCoroutine = nil
+
+MainSection:AddToggle("ESP", {
+    Title = "ESP",
+    Description = "Toggle ESP for players",
+    Default = false,
+    Callback = function(state)
+        ESPEnabled = state
+        if ESPEnabled then
+            if espCoroutine and coroutine.status(espCoroutine) ~= "dead" then return end
+            espCoroutine = coroutine.create(function()
+                while ESPEnabled do
+                    for _, player in pairs(Players:GetPlayers()) do
+                        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                            local highlight = player.Character:FindFirstChildOfClass("Highlight")
+                            if not highlight then
+                                highlight = Instance.new("Highlight")
+                                highlight.Parent = player.Character
+                                highlight.FillTransparency = 0.6
+                                highlight.OutlineTransparency = 0.9
+                            end
+                        end
+                    end
+                    task.wait()
+                end
+            end)
+            coroutine.resume(espCoroutine)
+        end
+    end
+})
+
+local FlyEnabled = false
+local flyBodyVelocity = nil
+local flyBodyGyro = nil
+local flySpeed = 100
+local flyConnection = nil
+
+local function startFlying()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+
+    if flyBodyVelocity and flyBodyVelocity.Parent then flyBodyVelocity:Destroy() end
+    if flyBodyGyro and flyBodyGyro.Parent then flyBodyGyro:Destroy() end
+    if flyConnection and flyConnection.Connected then flyConnection:Disconnect() end
+
+    flyBodyVelocity = Instance.new("BodyVelocity")
+    flyBodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    flyBodyVelocity.Velocity = Vector3.new(0,0,0)
+    flyBodyVelocity.Parent = rootPart
+
+    flyBodyGyro = Instance.new("BodyGyro")
+    flyBodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    flyBodyGyro.P = 9e4
+    flyBodyGyro.CFrame = rootPart.CFrame
+    flyBodyGyro.Parent = rootPart
+
+    flyConnection = RunService.Heartbeat:Connect(function()
+        if not FlyEnabled or not rootPart or not rootPart.Parent then return end
+        humanoid.PlatformStand = true
+
+        local cam = workspace.CurrentCamera
+        local moveDir = Vector3.new(0,0,0)
+
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir += cam.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir -= cam.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir -= cam.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir += cam.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0,1,0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir -= Vector3.new(0,1,0) end
+
+        if moveDir.Magnitude > 0 then moveDir = moveDir.Unit end
+        flyBodyVelocity.Velocity = moveDir * flySpeed
+        flyBodyGyro.CFrame = cam.CFrame
+    end)
+end
+
+local function stopFlying()
+    FlyEnabled = false
+    if flyBodyVelocity and flyBodyVelocity.Parent then flyBodyVelocity:Destroy() flyBodyVelocity = nil end
+    if flyBodyGyro and flyBodyGyro.Parent then flyBodyGyro:Destroy() flyBodyGyro = nil end
+    if flyConnection and flyConnection.Connected then flyConnection:Disconnect() flyConnection = nil end
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
+    end
+end
+
+MainSection:AddToggle("Fly", {
+    Title = "Fly",
+    Description = "Toggle flying",
+    Default = false,
+    Callback = function(state)
+        FlyEnabled = state
+        if FlyEnabled then
+            startFlying()
+        else
+            stopFlying()
+        end
+    end
+})
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if FlyEnabled then
+        task.wait(0.5)
+        startFlying()
+    end
+end)
+
+if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Died:Connect(function()
+        if FlyEnabled then stopFlying() end
+    end)
+end
+
+MainSection:AddButton({
+    Title = "God Mode",
+    Description = "Set infinite health",
+    Callback = function()
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass('Humanoid')
+            if humanoid then
+                humanoid.MaxHealth = math.huge
+                humanoid.Health = math.huge
+            end
+        end
+    end
+})
+
+local NoclipEnabled = false
+local noclipConnection = nil
+
+MainSection:AddToggle("Noclip", {
+    Title = "Noclip",
+    Description = "Toggle noclip",
+    Default = false,
+    Callback = function(state)
+        NoclipEnabled = state
+        if NoclipEnabled then
+            if noclipConnection and noclipConnection.Connected then return end
+            noclipConnection = RunService.Stepped:Connect(function()
+                local char = LocalPlayer.Character
+                if char then
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+        end
+    end
+})
+
+MainSection:AddSlider("WalkSpeed", {
+    Title = "Walk Speed",
+    Description = "Adjust walk speed",
+    Default = 16,
+    Min = 16,
+    Max = 500,
+    Rounding = 1,
+    Callback = function(value)
+        local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass('Humanoid')
+        if hum then hum.WalkSpeed = value end
+    end
+})
+
+MainSection:AddSlider("JumpPower", {
+    Title = "Jump Power",
+    Description = "Adjust jump power",
+    Default = 50,
+    Min = 50,
+    Max = 500,
+    Rounding = 1,
+    Callback = function(value)
+        local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass('Humanoid')
+        if hum then hum.JumpPower = value end
+    end
+})
+
+MainSection:AddButton({
+    Title = "Teleport to Spawn",
+    Description = "TP to spawn location",
+    Callback = function()
+        if LocalPlayer.Character and workspace:FindFirstChild("SpawnLocation") then
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if root then root.CFrame = workspace.SpawnLocation.CFrame end
+        end
+    end
+})
+
+MainSection:AddButton({
+    Title = "Auto Farm",
+    Description = "Placeholder for auto farming",
+    Callback = function()
+        safeNotify("Auto Farm", "Auto farm placeholder - implement your logic here", 5)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Anti AFK",
+    Description = "Prevent AFK kick",
+    Callback = function()
+        local vu = game:GetService("VirtualUser")
+        LocalPlayer.Idled:Connect(function()
+            vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            wait(1)
+            vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        end)
+        safeNotify("AFK", "Anti-AFK enabled", 3)
+    end
+})
+
+local PlayerSection = Tabs.Player:AddSection("Player Interactions")
+
+local playersList = {}
+local function buildPlayerList()
+    playersList = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        table.insert(playersList, p.Name)
+    end
+end
+buildPlayerList()
+local SelectedPlayer = nil
+local dropdownRef = nil
+
+dropdownRef = PlayerSection:AddDropdown("SelectPlayer", {
+    Title = "Select Player",
+    Description = "Choose a player",
+    Values = playersList,
+    Multi = false,
+    Default = 1,
+    Callback = function(value)
+        SelectedPlayer = Players:FindFirstChild(value)
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Refresh Players",
+    Description = "Update player dropdown",
+    Callback = function()
+        buildPlayerList()
+        pcall(function()
+            dropdownRef:SetValues(playersList)
+        end)
+        safeNotify("Players", "Player list refreshed (" .. tostring(#playersList) .. ")", 3)
+    end
+})
+
+Players.PlayerAdded:Connect(function(p)
+    table.insert(playersList, p.Name)
+    pcall(function() dropdownRef:SetValues(playersList) end)
+end)
+
+Players.PlayerRemoving:Connect(function(p)
+    for i, name in ipairs(playersList) do
+        if name == p.Name then table.remove(playersList, i); break end
+    end
+    pcall(function() dropdownRef:SetValues(playersList) end)
+end)
+
+local Following = false
+local followCoroutine = nil
+
+PlayerSection:AddToggle("FollowPlayer", {
+    Title = "Follow Player",
+    Description = "Follow selected player",
+    Default = false,
+    Callback = function(state)
+        Following = state
+        if Following then
+            if followCoroutine and coroutine.status(followCoroutine) ~= "dead" then return end
+            followCoroutine = coroutine.create(function()
+                while Following and SelectedPlayer and SelectedPlayer.Character and LocalPlayer.Character do
+                    local targetHRP = SelectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if targetHRP and myHRP then
+                        myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 5)
+                    end
+                    wait(0.12)
+                end
+            end)
+            coroutine.resume(followCoroutine)
+        else
+        end
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Unfollow",
+    Description = "Stop following",
+    Callback = function()
+        Following = false
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Scare Player",
+    Description = "Scare selected player (client-side effect)",
+    Callback = function()
+        if SelectedPlayer then
+            safeNotify("Scare", "Scaring " .. SelectedPlayer.Name, 4)
+        else
+            safeNotify("Scare", "No player selected", 3)
+        end
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "TP to Player",
+    Description = "Teleport to selected player",
+    Callback = function()
+        if SelectedPlayer and SelectedPlayer.Character and LocalPlayer.Character then
+            local s = SelectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local m = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if s and m then m.CFrame = s.CFrame end
+        end
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Kill Player",
+    Description = "Simulate killing (break joints)",
+    Callback = function()
+        if SelectedPlayer and SelectedPlayer.Character then
+            pcall(function() SelectedPlayer.Character:BreakJoints() end)
+        end
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Kick Player",
+    Description = "Client-side placeholder for kick",
+    Callback = function()
+        safeNotify("Kick", "Kick not implemented client-side", 4)
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Ban Player",
+    Description = "Client-side placeholder for ban",
+    Callback = function()
+        safeNotify("Ban", "Ban not implemented client-side", 4)
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Whisper",
+    Description = "Send whisper message (uses TextChatService if available)",
+    Callback = function()
+        if SelectedPlayer then
+            pcall(function()
+                local tcs = game:GetService("TextChatService")
+                if tcs and tcs.TextChannels and tcs.TextChannels.RBXGeneral then
+                    tcs.TextChannels.RBXGeneral:SendAsync("/w " .. SelectedPlayer.Name .. " Hello!")
+                else
+                    safeNotify("Whisper", "TextChatService not available", 3)
+                end
+            end)
+        end
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Spectate",
+    Description = "Spectate selected player",
+    Callback = function()
+        if SelectedPlayer and SelectedPlayer.Character then
+            local hum = SelectedPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if hum then workspace.CurrentCamera.CameraSubject = hum end
+        end
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Stop Spectate",
+    Description = "Reset camera",
+    Callback = function()
+        if LocalPlayer.Character then
+            local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if hum then workspace.CurrentCamera.CameraSubject = hum end
+        end
+    end
+})
+
+PlayerSection:AddButton({
+    Title = "Friend Request",
+    Description = "Send friend request (placeholder)",
+    Callback = function()
+        safeNotify("Friend", "Friend request (placeholder) - will require API", 4)
+    end
+})
+
+local checkpoint = nil
+local checkpointName = nil
+local CheckpointSection = Tabs.Player:AddSection("Checkpoint")
+
+CheckpointSection:AddButton({
+    Title = "Set Checkpoint (Current Position)",
+    Description = "Stores your current HumanoidRootPart CFrame as checkpoint",
+    Callback = function()
+        if LocalPlayer.Character then
+            local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                checkpoint = hrp.CFrame
+                checkpointName = "Custom"
+                safeNotify("Checkpoint", "Checkpoint set at your current position", 3)
+            else
+                safeNotify("Checkpoint", "HumanoidRootPart not found", 3)
+            end
+        end
+    end
+})
+
+CheckpointSection:AddButton({
+    Title = "Set Checkpoint to Spawn",
+    Description = "Set checkpoint to workspace SpawnLocation if present",
+    Callback = function()
+        if workspace:FindFirstChild("SpawnLocation") then
+            checkpoint = workspace.SpawnLocation.CFrame
+            checkpointName = "Spawn"
+            safeNotify("Checkpoint", "Checkpoint set to Spawn", 3)
+        else
+            safeNotify("Checkpoint", "No SpawnLocation found", 3)
+        end
+    end
+})
+
+CheckpointSection:AddButton({
+    Title = "TP to Checkpoint",
+    Description = "Teleport to your stored checkpoint",
+    Callback = function()
+        if checkpoint and LocalPlayer.Character then
+            local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = checkpoint
+                safeNotify("Checkpoint", "Teleported to checkpoint (" .. tostring(checkpointName or "Custom") .. ")", 3)
+            end
+        else
+            safeNotify("Checkpoint", "No checkpoint set", 3)
+        end
+    end
+})
+
+local MiscSection = Tabs.Misc:AddSection("Miscellaneous Features")
+
+MiscSection:AddToggle("NoClipMisc", {
+    Title = "No Clip",
+    Description = "Toggle no clip",
+    Default = false,
+    Callback = function(state)
+        NoclipEnabled = state
+        if not state and noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        elseif state and not noclipConnection then
+            noclipConnection = RunService.Stepped:Connect(function()
+                local char = LocalPlayer.Character
+                if char then
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
+
+MiscSection:AddButton({
+    Title = "Invisible",
+    Description = "Make character invisible",
+    Callback = function()
+        if LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetChildren()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.Transparency = 1
+                end
+            end
+        end
+    end
+})
+
+MiscSection:AddButton({
+    Title = "Visible",
+    Description = "Make character visible",
+    Callback = function()
+        if LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.Transparency = 0
+                end
+            end
+        end
+    end
+})
+
+MiscSection:AddToggle("DayTime", {
+    Title = "Day Time",
+    Description = "Set to day",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if game:GetService("Lighting") then game:GetService("Lighting").TimeOfDay = "12:00:00" end
+        else
+            if game:GetService("Lighting") then game:GetService("Lighting").TimeOfDay = "00:00:00" end
+        end
+    end
+})
+
+MiscSection:AddButton({
+    Title = "Full Bright",
+    Description = "Max brightness",
+    Callback = function()
+        local lighting = game:GetService("Lighting")
+        lighting.Brightness = 2
+        lighting.GlobalShadows = false
+        lighting.FogEnd = 999999
+    end
+})
+
+MiscSection:AddButton({
+    Title = "Spawn Item",
+    Description = "Spawn a tool (placeholder)",
+    Callback = function()
+        safeNotify("Spawn", "Spawn item placeholder - implement your item", 5)
+    end
+})
+
+MiscSection:AddButton({
+    Title = "Remove Fog",
+    Description = "Clear fog",
+    Callback = function()
+        game:GetService("Lighting").FogEnd = 999999
+    end
+})
+
+local Spam = false
+local spamThread = nil
+
+MiscSection:AddToggle("ChatSpam", {
+    Title = "Chat Spam",
+    Description = "Spam chat",
+    Default = false,
+    Callback = function(state)
+        Spam = state
+        if Spam then
+            spamThread = coroutine.create(function()
+                while Spam do
+                    pcall(function()
+                        local tcs = game:GetService("TextChatService")
+                        if tcs and tcs.TextChannels and tcs.TextChannels.RBXGeneral then
+                            tcs.TextChannels.RBXGeneral:SendAsync("Spam message!")
+                        end
+                    end)
+                    wait(1)
+                end
+            end)
+            coroutine.resume(spamThread)
+        else
+        end
+    end
+})
+
+local AutoClick = false
+local autoclickThread = nil
+
+MiscSection:AddToggle("AutoClick", {
+    Title = "Auto Click",
+    Description = "Auto mouse click",
+    Default = false,
+    Callback = function(state)
+        AutoClick = state
+        if AutoClick then
+            autoclickThread = coroutine.create(function()
+                while AutoClick do
+                    pcall(function()
+                        if mouse1click then mouse1click() end
+                    end)
+                    wait(0.1)
+                end
+            end)
+            coroutine.resume(autoclickThread)
+        end
+    end
+})
+
+MiscSection:AddButton({
+    Title = "Loop Kill All",
+    Description = "Kill all players loop (use responsibly)",
+    Callback = function()
+        safeRunAsync(function()
+            while true do
+                for _, player in pairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character then
+                        pcall(function() player.Character:BreakJoints() end)
+                    end
+                end
+                wait(1)
+            end
+        end)
+    end
+})
+
+MiscSection:AddSlider("Gravity", {
+    Title = "Gravity",
+    Description = "Adjust gravity",
+    Default = 196,
+    Min = 0,
+    Max = 500,
+    Rounding = 1,
+    Callback = function(value)
+        workspace.Gravity = value
+    end
+})
+
+local SettingsSection = Tabs.Settings:AddSection("Game Settings")
+
+SettingsSection:AddSlider("FOV", {
+    Title = "Field of View",
+    Description = "Adjust FOV",
+    Default = 70,
+    Min = 70,
+    Max = 120,
+    Rounding = 1,
+    Callback = function(value)
+        if workspace.CurrentCamera then workspace.CurrentCamera.FieldOfView = value end
+    end
+})
+
+SettingsSection:AddButton({
+    Title = "Unlock FPS",
+    Description = "Remove FPS cap (if supported)",
+    Callback = function()
+        pcall(function() setfpscap(999) end)
+        safeNotify("FPS", "Attempted to set FPS cap to 999", 3)
+    end
+})
+
+SettingsSection:AddKeybind("ToggleGUI", {
+    Title = "Toggle GUI",
+    Description = "Bind to toggle hub",
+    Default = "RightShift",
+    Callback = function(key)
+        Window:Minimize()
+    end
+})
+
+SettingsSection:AddButton({
+    Title = "Destroy GUI",
+    Description = "Close the hub",
+    Callback = function()
+        Window:Destroy()
+    end
+})
+
+SettingsSection:AddButton({
+    Title = "Reset Character",
+    Description = "Respawn",
+    Callback = function()
+        if LocalPlayer.Character then pcall(function() LocalPlayer.Character:BreakJoints() end) end
+    end
+})
+
+SettingsSection:AddButton({
+    Title = "Rejoin",
+    Description = "Rejoin the server",
+    Callback = function()
+        safeRunAsync(function()
+            pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
+        end)
+    end
+})
+
+SettingsSection:AddButton({
+    Title = "Server Hop",
+    Description = "Attempt to server hop (best-effort)",
+    Callback = function()
+        safeRunAsync(function()
+            safeNotify("Server Hop", "Attempting to rejoin (server-hop needs job IDs to change instance)", 5)
+            pcall(function()
+                TeleportService:Teleport(game.PlaceId, LocalPlayer)
+            end)
+        end)
+    end
+})
+
+SettingsSection:AddButton({
+    Title = "Auto Save",
+    Description = "Save settings",
+    Callback = function()
+        pcall(function() SaveManager:Save() end)
+        safeNotify("Save", "Settings saved (if SaveManager available)", 3)
+    end
+})
+
+SettingsSection:AddDropdown("Theme", {
+    Title = "Theme",
+    Description = "Change UI theme",
+    Values = {"Dark", "Light", "Mocha", "Aqua", "Rose"},
+    Multi = false,
+    Default = "Dark",
+    Callback = function(value)
+        Fluent.Options.Theme = value
+    end
+})
+
+SettingsSection:AddButton({
+    Title = "Test Notification",
+    Description = "Send test notify",
+    Callback = function()
+        safeNotify("Test", "Hello!", 3)
+    end
+})
+
+SettingsSection:AddSlider("Volume", {
+    Title = "Volume",
+    Description = "Adjust sound volume",
+    Default = 50,
+    Min = 0,
+    Max = 100,
+    Rounding = 1,
+    Callback = function(value)
+        safeNotify("Volume", "Volume set to " .. value, 3)
+    end
+})
+
+local ExtrasSection = Tabs.Extras:AddSection("Extra Features")
+
+ExtrasSection:AddToggle("Aimbot", {
+    Title = "Aimbot",
+    Description = "Toggle aimbot (placeholder)",
+    Default = false,
+    Callback = function(state)
+        safeNotify("Aimbot", "Aimbot " .. (state and "on" or "off") .. " - implement logic", 4)
+    end
+})
+
+ExtrasSection:AddToggle("TriggerBot", {
+    Title = "Trigger Bot",
+    Description = "Toggle trigger",
+    Default = false,
+    Callback = function(state)
+        safeNotify("Trigger Bot", "Trigger bot " .. (state and "on" or "off"), 4)
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Wallhack",
+    Description = "See through walls",
+    Callback = function()
+        for _, part in pairs(workspace:GetDescendants()) do
+            if part:IsA("BasePart") and part.Transparency < 0.5 then
+                part.Transparency = 0.5
+            end
+        end
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Remove Wallhack",
+    Description = "Reset transparency",
+    Callback = function()
+        for _, part in pairs(workspace:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 0
+            end
+        end
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Btools",
+    Description = "Give building tools",
+    Callback = function()
+        local backpack = LocalPlayer:FindFirstChild("Backpack")
+        if backpack then
+            local hb1 = Instance.new("HopperBin")
+            hb1.Parent = backpack
+            hb1.BinType = Enum.BinType.Hammer
+            local hb2 = Instance.new("HopperBin")
+            hb2.Parent = backpack
+            hb2.BinType = Enum.BinType.Clone
+            local hb3 = Instance.new("HopperBin")
+            hb3.Parent = backpack
+            hb3.BinType = Enum.BinType.Grab
+        end
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Load Dex",
+    Description = "Load dark dex explorer",
+    Callback = function()
+        safeRunAsync(function()
+            pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBX_DarkDex/main/source.lua"))() end)
+        end)
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Remote Spy",
+    Description = "Load remote spy",
+    Callback = function()
+        safeRunAsync(function()
+            pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/CloneTrooper1019/Roblox-Client-Tracker/master/Client/Libraries/RemoteSpyHook.lua"))() end)
+        end)
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Dump Scripts",
+    Description = "Dump game scripts (placeholder)",
+    Callback = function()
+        safeNotify("Dump", "Dumping scripts placeholder...", 4)
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Change Animation",
+    Description = "Custom anim",
+    Callback = function()
+        safeNotify("Animation", "Animation changed (placeholder)", 3)
+    end
+})
+
+ExtrasSection:AddSlider("VehicleSpeed", {
+    Title = "Vehicle Speed",
+    Description = "Boost vehicle",
+    Default = 100,
+    Min = 100,
+    Max = 500,
+    Rounding = 1,
+    Callback = function(value)
+        safeNotify("Vehicle", "Vehicle speed set to " .. value, 3)
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Infinite Ammo",
+    Description = "For guns (placeholder)",
+    Callback = function()
+        safeNotify("Ammo", "Infinite ammo activated (placeholder)", 4)
+    end
+})
+
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+Window:SelectTab(1)
+SaveManager:LoadAutoloadConfig()
+
+safeNotify("Hub Ready", "Fluent Script Hub loaded and updated", 4)
