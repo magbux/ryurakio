@@ -278,6 +278,14 @@ MainSection:AddToggle("True Invisible", {
     end
 })
 
+MainSection:AddButton({
+    Title = "Drift Character",
+    Description = "drift",
+    Callback = function()
+        if LocalPlayer.Character then pcall(function() LocalPlayer.Character:BreakJoints() end) end
+    end
+})
+
 LocalPlayer.CharacterAdded:Connect(function()
     if InvisibleEnabled then
         task.wait(0.5)
@@ -810,14 +818,6 @@ SettingsSection:AddButton({
     Description = "Close the hub",
     Callback = function()
         Window:Destroy()
-    end
-})
-
-SettingsSection:AddButton({
-    Title = "Drift Character",
-    Description = "drift",
-    Callback = function()
-        if LocalPlayer.Character then pcall(function() LocalPlayer.Character:BreakJoints() end) end
     end
 })
 
