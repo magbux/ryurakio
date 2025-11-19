@@ -470,22 +470,6 @@ PlayerSection:AddButton({
 })
 
 PlayerSection:AddButton({
-    Title = "Kick Player",
-    Description = "Client-side placeholder for kick",
-    Callback = function()
-        safeNotify("Kick", "Kick not implemented client-side", 4)
-    end
-})
-
-PlayerSection:AddButton({
-    Title = "Ban Player",
-    Description = "Client-side placeholder for ban",
-    Callback = function()
-        safeNotify("Ban", "Ban not implemented client-side", 4)
-    end
-})
-
-PlayerSection:AddButton({
     Title = "Whisper",
     Description = "Send whisper message (uses TextChatService if available)",
     Callback = function()
