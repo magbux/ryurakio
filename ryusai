@@ -754,10 +754,10 @@ SettingsSection:AddToggle("AutoLoadScript", {
 })
 
 SettingsSection:AddButton({
-    Title = "Copy Auto Load Command",
+    Title = "Copy Auto Load The Script",
     Description = "Copy the loadstring to clipboard",
     Callback = function()
-        setclipboard([[loadstring(game:HttpGet("YOUR_RAW_LINK_HERE"))()]])
+        setclipboard([[loadstring(game:HttpGet("https://raw.githubusercontent.com/magbux/ryurakio/refs/heads/main/ryusai"))()]])
         safeNotify("Copied", "Auto load command copied to clipboard!", 5)
     end
 })
