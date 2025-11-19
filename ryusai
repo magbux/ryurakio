@@ -300,8 +300,8 @@ MainSection:AddToggle("Noclip", {
 })
 
 MainSection:AddButton({
-    Title = "Slip",
-    Description = "Make your character slip downward",
+    Title = "abominator",
+    Description = "Make your character abominate downward",
     Callback = function()
         local char = LocalPlayer.Character
         if not char then return end
