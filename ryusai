@@ -15,7 +15,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Window = Fluent:CreateWindow({
     Title = "Ryusai-Hub🚬",
-    SubTitle = "Six Sayvean🃏",
+    SubTitle = "ryusai hub🃏",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -265,8 +265,8 @@ local function removeInvisibility()
 end
 
 MainSection:AddToggle("True Invisible", {
-    Title = "True Invisible",
-    Description = "Completely invisible + no collision (works after respawn)",
+    Title = "Invisible",
+    Description = "invisible and + no collide",
     Default = false,
     Callback = function(state)
         InvisibleEnabled = state
