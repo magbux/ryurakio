@@ -63,6 +63,26 @@ MainSection:AddButton({
     end
 })
 
+MainSection:AddButton({
+    Title = "Load fling script",
+    Description = "Loads fling script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/LiarRise/FLN-X/refs/heads/main/README.md"))()
+        end)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load invisible script",
+    Description = "Loads invis script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))()
+        end)
+    end
+})
+
 local ESPEnabled = false
 local espCoroutine = nil
 
@@ -276,6 +296,36 @@ MainSection:AddToggle("Noclip", {
                 noclipConnection = nil
             end
         end
+    end
+})
+
+MainSection:AddButton({
+    Title = "Slip",
+    Description = "Make your character slip downward",
+    Callback = function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = true
+        end
+
+        local slipVelocity = Instance.new("BodyVelocity")
+        slipVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+        slipVelocity.Velocity = Vector3.new(0, -50, 0)
+        slipVelocity.Parent = hrp
+
+        task.delay(1, function()
+            if slipVelocity and slipVelocity.Parent then
+                slipVelocity:Destroy()
+            end
+            if humanoid then
+                humanoid.PlatformStand = false
+            end
+        end)
     end
 })
 
