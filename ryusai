@@ -856,13 +856,16 @@ local SettingsSection = Tabs.Settings:AddSection("Game Settings")
 
 SettingsSection:AddToggle("AutoLoadScript", {
     Title = "Auto Load Script",
-    Description = "Automatically loads the script",
+    Description = "Automatically loads the script on rejoin",
     Default = true,
     Callback = function(state)
         if state then
             getgenv().AP_AutoLoad = game.PlaceId
-            if queue_on_teleport then
-                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/magbux/ryurakio/refs/heads/main/ryusai"))()')
+            local qot = queue_on_teleport or syn and syn.queue_on_teleport or fluxus and fluxus.queue_on_teleport
+            if qot then
+                pcall(function()
+                    qot('loadstring(game:HttpGet("https://raw.githubusercontent.com/magbux/ryurakio/main/ryusai"))()')
+                end)
             end
             safeNotify("Auto Load", "Auto load enabled for this game", 5)
         else
@@ -874,22 +877,28 @@ SettingsSection:AddToggle("AutoLoadScript", {
 
 SettingsSection:AddButton({
     Title = "Copy Auto Load The Script",
-    Description = "Copy the loadstring to clipboard pretty useless ngl",
+    Description = "Copy the loadstring to clipboard",
     Callback = function()
-        setclipboard([[loadstring(game:HttpGet("https://raw.githubusercontent.com/magbux/ryurakio/refs/heads/main/ryusai"))()]])
-        safeNotify("Copied", "Auto load command copied to clipboard!", 5)
+        if setclipboard then
+            setclipboard('loadstring(game:HttpGet("https://raw.githubusercontent.com/magbux/ryurakio/main/ryusai"))()')
+            safeNotify("Copied", "Auto load command copied to clipboard!", 5)
+        else
+            safeNotify("Copied", "setclipboard not available in this executor", 5)
+        end
     end
 })
 
 SettingsSection:AddSlider("FOV", {
     Title = "Field of View",
     Description = "Adjust FOV",
-    Default = 120,
+    Default = 70,
     Min = 70,
     Max = 120,
     Rounding = 1,
     Callback = function(value)
-        if workspace.CurrentCamera then workspace.CurrentCamera.FieldOfView = value end
+        if workspace.CurrentCamera then
+            workspace.CurrentCamera.FieldOfView = value
+        end
     end
 })
 
@@ -897,7 +906,7 @@ SettingsSection:AddButton({
     Title = "Unlock FPS",
     Description = "Remove FPS cap (if supported)",
     Callback = function()
-        pcall(function() setfpscap(999) end)
+        pcall(function() if setfpscap then setfpscap(999) end end)
         safeNotify("FPS", "Attempted to set FPS cap to 999", 3)
     end
 })
@@ -915,7 +924,7 @@ SettingsSection:AddButton({
     Title = "Destroy GUI",
     Description = "Close the hub",
     Callback = function()
-        Window:Destroy()
+        if Window and Window.Destroy then Window:Destroy() end
     end
 })
 
@@ -931,93 +940,113 @@ SettingsSection:AddButton({
 
 SettingsSection:AddButton({
     Title = "Server Hop",
-    Description = "Attempt to server hop",
+    Description = "Attempting to server hop",
     Callback = function()
         safeRunAsync(function()
             safeNotify("Server Hop", "Attempting to server hop", 5)
-            pcall(function()
-                TeleportService:Teleport(game.PlaceId, LocalPlayer)
-            end)
+            pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
         end)
     end
 })
 
 SettingsSection:AddButton({
     Title = "Auto Save",
-    Description = "Save settings",
+    Description = "Save setting",
     Callback = function()
         pcall(function() SaveManager:Save() end)
-        safeNotify("Save", "Settings saved just click it afew more times", 3)
+        safeNotify("Saving", "click afew more times", 3)
     end
 })
 
 local ShowHitboxesEnabled = false
-local hitboxConnections = {}
+local hitboxConns = {}
+
+local function createHitboxForPart(part)
+    if not part then return end
+    if part:FindFirstChild("HitboxBox") then return end
+    local box = Instance.new("SelectionBox")
+    box.Name = "HitboxBox"
+    box.Adornee = part
+    box.LineThickness = 0.02
+    box.SurfaceTransparency = 0.5
+    box.Parent = part
+end
+
+local function removeHitboxesFromCharacter(char)
+    if not char then return end
+    for _, d in pairs(char:GetDescendants()) do
+        if d.Name == "HitboxBox" and d:IsA("SelectionBox") then
+            pcall(function() d:Destroy() end)
+        end
+    end
+end
 
 SettingsSection:AddToggle("ShowHitboxes", {
-    Title = "Show All Hitboxes",
-    Description = "Toggle hitboxes for all players",
+    Title = "Show Hitboxes",
+    Description = "Toggle hitboxes of all players",
     Default = false,
     Callback = function(state)
         ShowHitboxesEnabled = state
-
         if ShowHitboxesEnabled then
             for _, player in pairs(Players:GetPlayers()) do
                 if player.Character then
                     for _, part in pairs(player.Character:GetDescendants()) do
-                        if part:IsA("BasePart") and (part.Name == "HumanoidRootPart" or part.Name == "Head") then
-                            if not part:FindFirstChild("HitboxBox") then
-                                local box = Instance.new("SelectionBox")
-                                box.Name = "HitboxBox"
-                                box.Adornee = part
-                                box.LineThickness = 0.05
-                                box.Color3 = Color3.fromRGB(255,0,0)
-                                box.Parent = part
-                            end
+                        if part:IsA("BasePart") and (part.Name == "HumanoidRootPart" or part.Name == "Head" or part.Name:match("Torso") or part.Name:match("Upper")) then
+                            createHitboxForPart(part)
                         end
                     end
                 end
-            end
-
-            hitboxConnections["PlayerAdded"] = Players.PlayerAdded:Connect(function(player)
-                player.CharacterAdded:Connect(function(char)
-                    for _, part in pairs(char:GetDescendants()) do
-                        if part:IsA("BasePart") and (part.Name == "HumanoidRootPart" or part.Name == "Head") then
-                            if not part:FindFirstChild("HitboxBox") then
-                                local box = Instance.new("SelectionBox")
-                                box.Name = "HitboxBox"
-                                box.Adornee = part
-                                box.LineThickness = 0.05
-                                box.Color3 = Color3.fromRGB(255,0,0)
-                                box.Parent = part
+                if not hitboxConns[player] then
+                    hitboxConns[player] = {}
+                    hitboxConns[player].charAdded = player.CharacterAdded:Connect(function(char)
+                        task.wait(0.1)
+                        for _, part in pairs(char:GetDescendants()) do
+                            if part:IsA("BasePart") and (part.Name == "HumanoidRootPart" or part.Name == "Head" or part.Name:match("Torso") or part.Name:match("Upper")) then
+                                createHitboxForPart(part)
                             end
                         end
-                    end
+                    end)
+                end
+            end
+            if not hitboxConns.PlayerAdded then
+                hitboxConns.PlayerAdded = Players.PlayerAdded:Connect(function(plr)
+                    hitboxConns[plr] = {}
+                    hitboxConns[plr].charAdded = plr.CharacterAdded:Connect(function(char)
+                        task.wait(0.1)
+                        for _, part in pairs(char:GetDescendants()) do
+                            if part:IsA("BasePart") and (part.Name == "HumanoidRootPart" or part.Name == "Head" or part.Name:match("Torso") or part.Name:match("Upper")) then
+                                createHitboxForPart(part)
+                            end
+                        end
+                    end)
                 end)
-            end)
+            end
         else
             for _, player in pairs(Players:GetPlayers()) do
                 if player.Character then
-                    for _, part in pairs(player.Character:GetDescendants()) do
-                        local box = part:FindFirstChild("HitboxBox")
-                        if box then box:Destroy() end
+                    removeHitboxesFromCharacter(player.Character)
+                end
+                if hitboxConns[player] then
+                    if hitboxConns[player].charAdded and hitboxConns[player].charAdded.Connected then
+                        hitboxConns[player].charAdded:Disconnect()
                     end
+                    hitboxConns[player] = nil
                 end
             end
-            for _, conn in pairs(hitboxConnections) do
-                if conn and conn.Connected then conn:Disconnect() end
+            if hitboxConns.PlayerAdded and hitboxConns.PlayerAdded.Connected then
+                hitboxConns.PlayerAdded:Disconnect()
+                hitboxConns.PlayerAdded = nil
             end
-            hitboxConnections = {}
         end
     end
 })
 
 SettingsSection:AddDropdown("Theme", {
     Title = "Theme",
-    Description = "Changer UI theme",
+    Description = "Change UI theme",
     Values = {"Dark", "Light", "Mocha", "Aqua", "Rose"},
     Multi = false,
-    Default = "Aqua",
+    Default = Fluent.Options.Theme or "Dark",
     Callback = function(value)
         Fluent.Options.Theme = value
     end
@@ -1027,7 +1056,7 @@ SettingsSection:AddButton({
     Title = "Test Notification",
     Description = "Send test notify",
     Callback = function()
-        safeNotify("yo", "easter egg 🥚", 3)
+        safeNotify("YO", "easter egg🥚", 3)
     end
 })
 
@@ -1039,17 +1068,19 @@ SettingsSection:AddSlider("Volume", {
     Max = 100,
     Rounding = 1,
     Callback = function(value)
-        safeNotify("Volume", "Volume set to " .. value, 3)
+        safeNotify("Volume", "Volume set to " .. tostring(value), 2)
     end
 })
 
 local ExtrasSection = Tabs.Extras:AddSection("Extra Features")
 
 ExtrasSection:AddButton({
-    Title = "aimbot script",
+    Title = "Load Aimbot",
     Description = "Load aimbot script",
     Callback = function()
-        loadstring(game:HttpGet("https://pastebin.com/raw/RZK9XdtH"))()
+        safeRunAsync(function()
+            pcall(function() loadstring(game:HttpGet("https://pastebin.com/raw/RZK9XdtH"))() end)
+        end)
     end
 })
 
@@ -1058,8 +1089,8 @@ ExtrasSection:AddButton({
     Description = "See through walls",
     Callback = function()
         for _, part in pairs(workspace:GetDescendants()) do
-            if part:IsA("BasePart") and part.Transparency < 0.5 then
-                part.Transparency = 0.5
+            if part:IsA("BasePart") then
+                pcall(function() part.Transparency = 0.5 end)
             end
         end
     end
@@ -1071,7 +1102,7 @@ ExtrasSection:AddButton({
     Callback = function()
         for _, part in pairs(workspace:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.Transparency = 0
+                pcall(function() part.Transparency = 0 end)
             end
         end
     end
@@ -1079,19 +1110,17 @@ ExtrasSection:AddButton({
 
 ExtrasSection:AddButton({
     Title = "Btools",
-    Description = "Give building tools",
+    Description = "Gives btools",
     Callback = function()
         local backpack = LocalPlayer:FindFirstChild("Backpack")
         if backpack then
-            local hb1 = Instance.new("HopperBin")
-            hb1.Parent = backpack
-            hb1.BinType = Enum.BinType.Hammer
-            local hb2 = Instance.new("HopperBin")
-            hb2.Parent = backpack
-            hb2.BinType = Enum.BinType.Clone
-            local hb3 = Instance.new("HopperBin")
-            hb3.Parent = backpack
-            hb3.BinType = Enum.BinType.Grab
+            for _, t in pairs({"Hammer","Clone","Grab"}) do
+                local hb = Instance.new("HopperBin")
+                hb.Parent = backpack
+                if t == "Hammer" then hb.BinType = Enum.BinType.Hammer end
+                if t == "Clone" then hb.BinType = Enum.BinType.Clone end
+                if t == "Grab" then hb.BinType = Enum.BinType.Grab end
+            end
         end
     end
 })
@@ -1124,14 +1153,6 @@ ExtrasSection:AddButton({
     end
 })
 
-ExtrasSection:AddButton({
-    Title = "Change Animation",
-    Description = "Custom anim",
-    Callback = function()
-        safeNotify("Animation", "Animation changed (placeholder)", 3)
-    end
-})
-
 ExtrasSection:AddSlider("VehicleSpeed", {
     Title = "Vehicle Speed",
     Description = "Boost vehicle",
@@ -1140,7 +1161,7 @@ ExtrasSection:AddSlider("VehicleSpeed", {
     Max = 500,
     Rounding = 1,
     Callback = function(value)
-        safeNotify("Vehicle", "Vehicle speed set to " .. value, 3)
+        safeNotify("Vehicle", "Vehicle speed set to " .. tostring(value), 3)
     end
 })
 
@@ -1156,7 +1177,12 @@ Window:SelectTab(1)
 SaveManager:LoadAutoloadConfig()
 
 if getgenv().AP_AutoLoad == game.PlaceId then
-    SettingsSection:GetToggle("AutoLoadScript"):SetValue(true)
+    local ok, err = pcall(function()
+        local toggle = SettingsSection:GetToggle("AutoLoadScript")
+        if toggle and toggle.SetValue then
+            toggle:SetValue(true)
+        end
+    end)
 end
 
-safeNotify("Hub Ready", "UHH", 8)
+safeNotify("Hub Ready", "uhh", 6)
