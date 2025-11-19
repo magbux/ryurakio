@@ -533,6 +533,47 @@ PlayerSection:AddButton({
     end
 })
 
+local triSpin = false
+local triConnection
+
+PlayerSection:AddToggle("TriangleSpin", {
+    Title = "helicopter Spin",
+    Description = "Spin in a helicopter pattern use with Fly",
+    Default = false,
+    Callback = function(state)
+        triSpin = state
+
+        if triSpin then
+            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+
+            local points = {
+                Vector3.new(10, 0, 0),
+                Vector3.new(-10, 0, 10),
+                Vector3.new(-10, 0, -10)
+            }
+
+            local index = 1
+            local speed = 0.35
+
+            triConnection = RunService.Heartbeat:Connect(function()
+                if not triSpin then return end
+                local target = hrp.Position + points[index]
+                hrp.CFrame = CFrame.new(hrp.Position, target)
+                hrp.CFrame = hrp.CFrame + (hrp.CFrame.LookVector * 3)
+
+                index = index + 1
+                if index > #points then index = 1 end
+            end)
+        else
+            if triConnection then
+                triConnection:Disconnect()
+                triConnection = nil
+            end
+        end
+    end
+})
+
 PlayerSection:AddButton({
     Title = "Stop Spectate",
     Description = "Reset camera",
@@ -616,30 +657,6 @@ CheckpointSection:AddButton({
 })
 
 local MiscSection = Tabs.Misc:AddSection("Miscellaneous Features")
-
-MiscSection:AddToggle("NoClipMisc", {
-    Title = "No Clip",
-    Description = "Toggle no clip",
-    Default = false,
-    Callback = function(state)
-        NoclipEnabled = state
-        if not state and noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        elseif state and not noclipConnection then
-            noclipConnection = RunService.Stepped:Connect(function()
-                local char = LocalPlayer.Character
-                if char then
-                    for _, part in pairs(char:GetDescendants()) do
-                        if part:IsA("BasePart") and part.CanCollide then
-                            part.CanCollide = false
-                        end
-                    end
-                end
-            end)
-        end
-    end
-})
 
 MiscSection:AddButton({
     Title = "Invisible",
@@ -902,6 +919,67 @@ SettingsSection:AddButton({
     end
 })
 
+local ShowHitboxesEnabled = false
+local hitboxConnections = {}
+
+SettingsSection:AddToggle("ShowHitboxes", {
+    Title = "Show All Hitboxes",
+    Description = "Toggle hitboxes for all players",
+    Default = false,
+    Callback = function(state)
+        ShowHitboxesEnabled = state
+
+        if ShowHitboxesEnabled then
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character then
+                    for _, part in pairs(player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") and (part.Name == "HumanoidRootPart" or part.Name == "Head") then
+                            if not part:FindFirstChild("HitboxBox") then
+                                local box = Instance.new("SelectionBox")
+                                box.Name = "HitboxBox"
+                                box.Adornee = part
+                                box.LineThickness = 0.05
+                                box.Color3 = Color3.fromRGB(255,0,0)
+                                box.Parent = part
+                            end
+                        end
+                    end
+                end
+            end
+
+            hitboxConnections["PlayerAdded"] = Players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function(char)
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") and (part.Name == "HumanoidRootPart" or part.Name == "Head") then
+                            if not part:FindFirstChild("HitboxBox") then
+                                local box = Instance.new("SelectionBox")
+                                box.Name = "HitboxBox"
+                                box.Adornee = part
+                                box.LineThickness = 0.05
+                                box.Color3 = Color3.fromRGB(255,0,0)
+                                box.Parent = part
+                            end
+                        end
+                    end
+                end)
+            end)
+        else
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character then
+                    for _, part in pairs(player.Character:GetDescendants()) do
+                        local box = part:FindFirstChild("HitboxBox")
+                        if box then box:Destroy() end
+                    end
+                end
+            end
+            for _, conn in pairs(hitboxConnections) do
+                if conn.Connected then conn:Disconnect() end
+            end
+            hitboxConnections = {}
+        end
+    end
+})
+
 SettingsSection:AddDropdown("Theme", {
     Title = "Theme",
     Description = "Changer UI theme",
@@ -935,21 +1013,11 @@ SettingsSection:AddSlider("Volume", {
 
 local ExtrasSection = Tabs.Extras:AddSection("Extra Features")
 
-ExtrasSection:AddToggle("Aimbot", {
-    Title = "Aimbot",
-    Description = "Toggle aimbot (placeholder)",
-    Default = false,
-    Callback = function(state)
-        safeNotify("Aimbot", "Aimbot " .. (state and "on" or "off") .. " - implement logic", 4)
-    end
-})
-
-ExtrasSection:AddToggle("TriggerBot", {
-    Title = "Trigger Bot",
-    Description = "Toggle trigger",
-    Default = false,
-    Callback = function(state)
-        safeNotify("Trigger Bot", "Trigger bot " .. (state and "on" or "off"), 4)
+ExtraSection:AddButton({
+    Title = "aimbot script",
+    Description = "Load aimbot script",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/RZK9XdtH"))()
     end
 })
 
@@ -1041,14 +1109,6 @@ ExtrasSection:AddSlider("VehicleSpeed", {
     Rounding = 1,
     Callback = function(value)
         safeNotify("Vehicle", "Vehicle speed set to " .. value, 3)
-    end
-})
-
-ExtrasSection:AddButton({
-    Title = "Infinite Ammo",
-    Description = "For guns (placeholder)",
-    Callback = function()
-        safeNotify("Ammo", "Infinite ammo activated (placeholder)", 4)
     end
 })
 
