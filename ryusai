@@ -89,8 +89,24 @@ MainSection:AddToggle("ESP", {
                     end
                     task.wait()
                 end
+                -- cleanup highlights when disabled
+                for _, player in pairs(Players:GetPlayers()) do
+                    if player.Character then
+                        local hl = player.Character:FindFirstChildOfClass("Highlight")
+                        if hl then pcall(function() hl:Destroy() end) end
+                    end
+                end
             end)
             coroutine.resume(espCoroutine)
+        else
+            -- if toggle turned off while coroutine still running the coroutine will handle cleanup,
+            -- but ensure existing highlights are removed immediately as well
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character then
+                    local hl = player.Character:FindFirstChildOfClass("Highlight")
+                    if hl then pcall(function() hl:Destroy() end) end
+                end
+            end
         end
     end
 })
@@ -106,9 +122,15 @@ local function startFlying()
     local humanoid = character:WaitForChild("Humanoid")
     local rootPart = character:WaitForChild("HumanoidRootPart")
 
-    if flyBodyVelocity and flyBodyVelocity.Parent then flyBodyVelocity:Destroy() end
-    if flyBodyGyro and flyBodyGyro.Parent then flyBodyGyro:Destroy() end
-    if flyConnection and flyConnection.Connected then flyConnection:Disconnect() end
+    if flyBodyVelocity and flyBodyVelocity.Parent then
+        flyBodyVelocity:Destroy()
+    end
+    if flyBodyGyro and flyBodyGyro.Parent then
+        flyBodyGyro:Destroy()
+    end
+    if flyConnection and flyConnection.Connected then
+        flyConnection:Disconnect()
+    end
 
     flyBodyVelocity = Instance.new("BodyVelocity")
     flyBodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
@@ -128,12 +150,12 @@ local function startFlying()
         local cam = workspace.CurrentCamera
         local moveDir = Vector3.new(0,0,0)
 
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir += cam.CFrame.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir -= cam.CFrame.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir -= cam.CFrame.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir += cam.CFrame.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0,1,0) end
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir -= Vector3.new(0,1,0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + cam.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - cam.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - cam.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + cam.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0,1,0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir - Vector3.new(0,1,0) end
 
         if moveDir.Magnitude > 0 then moveDir = moveDir.Unit end
         flyBodyVelocity.Velocity = moveDir * flySpeed
@@ -143,11 +165,21 @@ end
 
 local function stopFlying()
     FlyEnabled = false
-    if flyBodyVelocity and flyBodyVelocity.Parent then flyBodyVelocity:Destroy() flyBodyVelocity = nil end
-    if flyBodyGyro and flyBodyGyro.Parent then flyBodyGyro:Destroy() flyBodyGyro = nil end
-    if flyConnection and flyConnection.Connected then flyConnection:Disconnect() flyConnection = nil end
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
+    if flyBodyVelocity and flyBodyVelocity.Parent then
+        flyBodyVelocity:Destroy()
+        flyBodyVelocity = nil
+    end
+    if flyBodyGyro and flyBodyGyro.Parent then
+        flyBodyGyro:Destroy()
+        flyBodyGyro = nil
+    end
+    if flyConnection and flyConnection.Connected then
+        flyConnection:Disconnect()
+        flyConnection = nil
+    end
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.PlatformStand = false
     end
 end
 
@@ -198,7 +230,7 @@ MainSection:AddToggle("GodMode", {
                     if hum then
                         hum.Health = hum.MaxHealth
                         hum.BreakJointsOnDeath = false
-                        hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+                        pcall(function() hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false) end)
                         if hum.Health <= 0 then
                             hum.Health = hum.MaxHealth
                         end
@@ -261,6 +293,7 @@ local function applyInvisibility()
             part.Transparency = 1
             part.CanCollide = false
         elseif part:IsA("Decal") or part:IsA("Texture") then
+            originalTransparency[part] = part.Transparency
             part.Transparency = 1
         end
     end
@@ -278,10 +311,12 @@ end
 local function removeInvisibility()
     for part, trans in pairs(originalTransparency) do
         if part and part.Parent then
-            part.Transparency = trans
-            if originalCanCollide[part] ~= nil then
-                part.CanCollide = originalCanCollide[part]
-            end
+            pcall(function()
+                part.Transparency = trans
+                if originalCanCollide[part] ~= nil then
+                    part.CanCollide = originalCanCollide[part]
+                end
+            end)
         end
     end
     originalTransparency = {}
@@ -446,7 +481,6 @@ PlayerSection:AddToggle("FollowPlayer", {
                 end
             end)
             coroutine.resume(followCoroutine)
-        else
         end
     end
 })
@@ -554,14 +588,11 @@ PlayerSection:AddToggle("TriangleSpin", {
             }
 
             local index = 1
-            local speed = 0.35
 
             triConnection = RunService.Heartbeat:Connect(function()
                 if not triSpin then return end
                 local target = hrp.Position + points[index]
-                hrp.CFrame = CFrame.new(hrp.Position, target)
-                hrp.CFrame = hrp.CFrame + (hrp.CFrame.LookVector * 3)
-
+                hrp.CFrame = CFrame.new(hrp.Position, target) + (CFrame.new() * (hrp.CFrame.LookVector * 3))
                 index = index + 1
                 if index > #points then index = 1 end
             end)
@@ -765,7 +796,6 @@ MiscSection:AddToggle("ChatSpam", {
                 end
             end)
             coroutine.resume(spamThread)
-        else
         end
     end
 })
@@ -782,7 +812,9 @@ MiscSection:AddToggle("AutoClick", {
         if state then
             autoclickThread = coroutine.create(function()
                 while AutoClick do
-                    mouse1click()
+                    if mouse1click then
+                        pcall(mouse1click)
+                    end
                     task.wait(0.05)
                 end
             end)
@@ -973,7 +1005,7 @@ SettingsSection:AddToggle("ShowHitboxes", {
                 end
             end
             for _, conn in pairs(hitboxConnections) do
-                if conn.Connected then conn:Disconnect() end
+                if conn and conn.Connected then conn:Disconnect() end
             end
             hitboxConnections = {}
         end
@@ -1013,7 +1045,7 @@ SettingsSection:AddSlider("Volume", {
 
 local ExtrasSection = Tabs.Extras:AddSection("Extra Features")
 
-ExtraSection:AddButton({
+ExtrasSection:AddButton({
     Title = "aimbot script",
     Description = "Load aimbot script",
     Callback = function()
