@@ -178,17 +178,41 @@ if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humano
     end)
 end
 
-MainSection:AddButton({
+local godmode = false
+local godConnection = nil
+
+MainSection:AddToggle("GodMode", {
     Title = "God Mode",
-    Description = "Set infinite health",
-    Callback = function()
-        local character = LocalPlayer.Character
-        if character then
-            local humanoid = character:FindFirstChildOfClass('Humanoid')
-            if humanoid then
-                humanoid.MaxHealth = math.huge
-                humanoid.Health = math.huge
+    Description = "the name explains it",
+    Default = false,
+    Callback = function(state)
+        godmode = state
+
+        if godmode then
+            if godConnection then godConnection:Disconnect() end
+
+            godConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                local char = LocalPlayer.Character
+                if char then
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    if hum then
+                        hum.Health = hum.MaxHealth
+                        hum.BreakJointsOnDeath = false
+                        hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+                        if hum.Health <= 0 then
+                            hum.Health = hum.MaxHealth
+                        end
+                    end
+                end
+            end)
+
+            safeNotify("God Mode", "God mode enabled", 4)
+        else
+            if godConnection then
+                godConnection:Disconnect()
+                godConnection = nil
             end
+            safeNotify("God Mode", "God mode disabled", 4)
         end
     end
 })
@@ -437,10 +461,22 @@ PlayerSection:AddButton({
 
 PlayerSection:AddButton({
     Title = "Scare Player",
-    Description = "Scare selected player (client-side effect)",
+    Description = "scare em",
     Callback = function()
-        if SelectedPlayer then
-            safeNotify("Scare", "Scaring " .. SelectedPlayer.Name, 4)
+        if SelectedPlayer and SelectedPlayer.Character and LocalPlayer.Character then
+            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local targetHRP = SelectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myHRP and targetHRP then
+                local originalCFrame = myHRP.CFrame
+                local forwardOffset = targetHRP.CFrame.LookVector * 3
+                myHRP.CFrame = targetHRP.CFrame + forwardOffset
+                task.delay(0.5, function() 
+                    if myHRP and myHRP.Parent then
+                        myHRP.CFrame = originalCFrame
+                    end
+                end)
+                safeNotify("Scare", "Scaring " .. SelectedPlayer.Name, 4)
+            end
         else
             safeNotify("Scare", "No player selected", 3)
         end
@@ -471,7 +507,7 @@ PlayerSection:AddButton({
 
 PlayerSection:AddButton({
     Title = "Whisper",
-    Description = "Send whisper message (uses TextChatService if available)",
+    Description = "Send whisper message uses TextChatService if available",
     Callback = function()
         if SelectedPlayer then
             pcall(function()
@@ -510,9 +546,21 @@ PlayerSection:AddButton({
 
 PlayerSection:AddButton({
     Title = "Friend Request",
-    Description = "Send friend request (placeholder)",
+    Description = "Send friend request",
     Callback = function()
-        safeNotify("Friend", "Friend request (placeholder) - will require API", 4)
+        if SelectedPlayer then
+            local success, result = pcall(function()
+                LocalPlayer:RequestFriendship(SelectedPlayer)
+            end)
+
+            if success then
+                safeNotify("Friend Request", "Sent a friend request to " .. SelectedPlayer.Name, 4)
+            else
+                safeNotify("Friend Request", "Failed to send friend request", 4)
+            end
+        else
+            safeNotify("Friend Request", "No player selected", 3)
+        end
     end
 })
 
@@ -646,10 +694,27 @@ MiscSection:AddButton({
 })
 
 MiscSection:AddButton({
-    Title = "Spawn Item",
-    Description = "Spawn a tool (placeholder)",
+    Title = "Spawn tptool",
+    Description = "Spawn a Tptool",
     Callback = function()
-        safeNotify("Spawn", "Spawn item placeholder - implement your item", 5)
+        local backpack = LocalPlayer:FindFirstChild("Backpack")
+        if not backpack then return end
+
+        local tpTool = Instance.new("Tool")
+        tpTool.Name = "TP Tool"
+        tpTool.RequiresHandle = false
+        tpTool.CanBeDropped = true
+
+        tpTool.Activated:Connect(function()
+            local mouse = LocalPlayer:GetMouse()
+            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp and mouse then
+                hrp.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0,3,0))
+            end
+        end)
+
+        tpTool.Parent = backpack
+        safeNotify("Spawn Item", "TP Tool spawned in your backpack!", 4)
     end
 })
 
