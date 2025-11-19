@@ -3,6 +3,10 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+local VirtualUser = game:GetService("VirtualUser")
+local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -10,8 +14,8 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
-    Title = "ryuma hub🃏",
-    SubTitle = "six sayven📈📉",
+    Title = "Admin Panel",
+    SubTitle = "AP",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -208,6 +212,68 @@ MainSection:AddToggle("Noclip", {
         end
     end
 })
+
+local InvisibleEnabled = false
+local originalTransparency = {}
+local originalCanCollide = {}
+
+local function applyInvisibility()
+    local char = LocalPlayer.Character
+    if not char then return end
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            originalTransparency[part] = part.Transparency
+            originalCanCollide[part] = part.CanCollide
+            part.Transparency = 1
+            part.CanCollide = false
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+    for _, acc in pairs(char:GetChildren()) do
+        if acc:IsA("Accessory") then
+            local handle = acc:FindFirstChild("Handle")
+            if handle then
+                originalTransparency[handle] = handle.Transparency
+                handle.Transparency = 1
+            end
+        end
+    end
+end
+
+local function removeInvisibility()
+    for part, trans in pairs(originalTransparency) do
+        if part and part.Parent then
+            part.Transparency = trans
+            if originalCanCollide[part] ~= nil then
+                part.CanCollide = originalCanCollide[part]
+            end
+        end
+    end
+    originalTransparency = {}
+    originalCanCollide = {}
+end
+
+MainSection:AddToggle("True Invisible", {
+    Title = "True Invisible",
+    Description = "Completely invisible + no collision (works after respawn)",
+    Default = false,
+    Callback = function(state)
+        InvisibleEnabled = state
+        if InvisibleEnabled then
+            applyInvisibility()
+        else
+            removeInvisibility()
+        end
+    end
+})
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if InvisibleEnabled then
+        task.wait(0.5)
+        applyInvisibility()
+    end
+end)
 
 MainSection:AddSlider("WalkSpeed", {
     Title = "Walk Speed",
@@ -629,13 +695,11 @@ MiscSection:AddToggle("AutoClick", {
     Default = false,
     Callback = function(state)
         AutoClick = state
-        if AutoClick then
+        if state then
             autoclickThread = coroutine.create(function()
                 while AutoClick do
-                    pcall(function()
-                        if mouse1click then mouse1click() end
-                    end)
-                    wait(0.1)
+                    mouse1click()
+                    task.wait(0.05)
                 end
             end)
             coroutine.resume(autoclickThread)
@@ -673,6 +737,30 @@ MiscSection:AddSlider("Gravity", {
 })
 
 local SettingsSection = Tabs.Settings:AddSection("Game Settings")
+
+SettingsSection:AddToggle("AutoLoadScript", {
+    Title = "Auto Load Script",
+    Description = "Automatically reloads this script on rejoin",
+    Default = true,
+    Callback = function(state)
+        if state then
+            getgenv().AP_AutoLoad = game.PlaceId
+            safeNotify("Auto Load", "Auto load enabled for this game", 5)
+        else
+            getgenv().AP_AutoLoad = nil
+            safeNotify("Auto Load", "Auto load disabled", 5)
+        end
+    end
+})
+
+SettingsSection:AddButton({
+    Title = "Copy Auto Load Command",
+    Description = "Copy the loadstring to clipboard",
+    Callback = function()
+        setclipboard([[loadstring(game:HttpGet("YOUR_RAW_LINK_HERE"))()]])
+        safeNotify("Copied", "Auto load command copied to clipboard!", 5)
+    end
+})
 
 SettingsSection:AddSlider("FOV", {
     Title = "Field of View",
@@ -754,10 +842,10 @@ SettingsSection:AddButton({
 
 SettingsSection:AddDropdown("Theme", {
     Title = "Theme",
-    Description = "Change UI theme",
+    Description = "Changer UI theme",
     Values = {"Dark", "Light", "Mocha", "Aqua", "Rose"},
     Multi = false,
-    Default = "Dark",
+    Default = "Aqua",
     Callback = function(value)
         Fluent.Options.Theme = value
     end
@@ -767,7 +855,7 @@ SettingsSection:AddButton({
     Title = "Test Notification",
     Description = "Send test notify",
     Callback = function()
-        safeNotify("Test", "Hello!", 3)
+        safeNotify("mama", "mia", 3)
     end
 })
 
@@ -913,4 +1001,8 @@ SaveManager:BuildConfigSection(Tabs.Settings)
 Window:SelectTab(1)
 SaveManager:LoadAutoloadConfig()
 
-safeNotify("Hub Ready", "Fluent Script Hub loaded and updated", 4)
+if getgenv().AP_AutoLoad == game.PlaceId then
+    SettingsSection:GetToggle("AutoLoadScript"):SetValue(true)
+end
+
+safeNotify("Hub Ready", "UHH", 8)
