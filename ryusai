@@ -338,8 +338,8 @@ MainSection:AddToggle("True Invisible", {
 })
 
 MainSection:AddButton({
-    Title = "Drift Character",
-    Description = "drift",
+    Title = "Drift Character/rs",
+    Description = "drift/rs sometimes it rs sometimes it makes your drift 50/50",
     Callback = function()
         if LocalPlayer.Character then pcall(function() LocalPlayer.Character:BreakJoints() end) end
     end
