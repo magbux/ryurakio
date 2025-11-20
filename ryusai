@@ -440,10 +440,10 @@ MainSection:AddButton({
 })
 
 MainSection:AddButton({
-    Title = "Auto Farm",
+    Title = "Auto Farm Make A Army",
     Description = "Placeholder for auto farming",
     Callback = function()
-        safeNotify("Auto Farm", "Auto farm placeholder - implement your logic here", 5)
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/MakeaArmy"))()
     end
 })
 
@@ -1130,6 +1130,16 @@ ExtrasSection:AddButton({
     Callback = function()
         safeRunAsync(function()
             pcall(function() loadstring(game:HttpGet("https://pastebin.com/raw/RZK9XdtH"))() end)
+        end)
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "Load Aimbot no 2",
+    Description = "Load aimbot script no 2",
+    Callback = function()
+        safeRunAsync(function()
+            pcall(function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Hans-Mobile-Aimbot-64537"))() end)
         end)
     end
 })
