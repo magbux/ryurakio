@@ -24,11 +24,11 @@ local Window = Fluent:CreateWindow({
 })
 
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "rbxassetid://4483362458" }),
-    Player = Window:AddTab({ Title = "Player", Icon = "rbxassetid://4483362458" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "rbxassetid://4483362458" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "rbxassetid://4483362458" }),
-    Extras = Window:AddTab({ Title = "Extras", Icon = "rbxassetid://4483362458" })
+    Main = Window:AddTab({ Title = "Main", Icon = "rbxassetid://6031097225" }),
+    Player = Window:AddTab({ Title = "Player", Icon = "rbxassetid://6031075938" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "rbxassetid://6031280885" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "rbxassetid://6031280882" }),
+    Extras = Window:AddTab({ Title = "Extras", Icon = "rbxassetid://6031280882" })
 }
 
 local function safeNotify(title, content, dur)
@@ -41,10 +41,10 @@ local function safeRunAsync(fn)
     end)
 end
 
-local MainSection = Tabs.Main:AddSection("Core Features")
+local MainSection = Tabs.Main:AddSection("Features")
 
 MainSection:AddButton({
-    Title = "Load Reviz cred to owner",
+    Title = "Load Reviz",
     Description = "Loads Reviz admin script",
     Callback = function()
         safeRunAsync(function()
