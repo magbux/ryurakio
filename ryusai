@@ -26,9 +26,9 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "rbxassetid://6031097225" }),
     Player = Window:AddTab({ Title = "Player", Icon = "rbxassetid://6031075938" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "rbxassetid://6031280885" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "rbxassetid://6031097226" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "rbxassetid://6031280882" }),
-    Extras = Window:AddTab({ Title = "Extras", Icon = "rbxassetid://6031280882" })
+    Extras = Window:AddTab({ Title = "Extras", Icon = "rbxassetid://6031094670" })
 }
 
 local function safeNotify(title, content, dur)
