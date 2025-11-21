@@ -74,6 +74,16 @@ MainSection:AddButton({
 })
 
 MainSection:AddButton({
+    Title = "Load Minesweeper Script",
+    Description = "Loads Minesweeper Script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet(('https://pastefy.app/mwTErG3G/raw'),true))()
+        end)
+    end
+})
+
+MainSection:AddButton({
     Title = "Load fling script",
     Description = "Loads fling script",
     Callback = function()
