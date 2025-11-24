@@ -64,11 +64,21 @@ MainSection:AddButton({
 })
 
 MainSection:AddButton({
-    Title = "Load Kick Script",
+    Title = "Load Kick Script (mobile)",
     Description = "Loads Kick Script",
     Callback = function()
         safeRunAsync(function()
             loadstring(game:HttpGet(('https://pastefy.app/xzlJBaV1/raw '),true))()
+        end)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load Kick Script (pc)",
+    Description = "Loads Kick Script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet("https://pastefy.app/wF2UZX5J/raw"))()
         end)
     end
 })
