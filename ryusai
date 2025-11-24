@@ -1275,4 +1275,4 @@ if getgenv().AP_AutoLoad == game.PlaceId then
     end)
 end
 
-safeNotify("Hub Ready", "uhh", 6)
+safeNotify("reminder", "don't change the bind if you're on mobile", 6)
