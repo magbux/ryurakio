@@ -1235,14 +1235,6 @@ ExtrasSection:AddButton({
     end
 })
 
-ExtrasSection:AddButton({
-    Title = "Dump Scripts",
-    Description = "Dump game scripts (placeholder)",
-    Callback = function()
-        safeNotify("Dump", "Dumping scripts placeholder...", 4)
-    end
-})
-
 ExtrasSection:AddSlider("VehicleSpeed", {
     Title = "Vehicle Speed",
     Description = "Boost vehicle",
