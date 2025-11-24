@@ -991,6 +991,14 @@ SettingsSection:AddButton({
     end
 })
 
+SettingsSection:AddButton({
+    Title = "Mobile button",
+    Description = "allows for easier access to the script in mobile",
+    Callback = function()
+        loadstring(game:HttpGet(('https://pastefy.app/PHNwBnTN/raw'),true))()
+    end
+})
+
 SettingsSection:AddKeybind("ToggleGUI", {
     Title = "Toggle GUI",
     Description = "Bind to toggle hub",
