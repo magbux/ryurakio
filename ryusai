@@ -333,8 +333,8 @@ local function removeInvisibility()
     originalCanCollide = {}
 end
 
-MainSection:AddToggle("Fake Invisible", {
-    Title = "Invisible",
+MainSection:AddToggle("Invisible", {
+    Title = " Fake Invisible",
     Description = "Finvisible and + no collide",
     Default = false,
     Callback = function(state)
