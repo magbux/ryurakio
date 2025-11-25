@@ -260,8 +260,8 @@ MainSection:AddToggle("Noclip", {
 })
 
 MainSection:AddButton({
-    Title = "abominator",
-    Description = "Make your character abominate downward",
+    Title = "flinger",
+    Description = "Make your character fling downward",
     Callback = function()
         local char = LocalPlayer.Character
         if not char then return end
@@ -333,9 +333,9 @@ local function removeInvisibility()
     originalCanCollide = {}
 end
 
-MainSection:AddToggle("True Invisible", {
+MainSection:AddToggle("Fake Invisible", {
     Title = "Invisible",
-    Description = "invisible and + no collide",
+    Description = "Finvisible and + no collide",
     Default = false,
     Callback = function(state)
         InvisibleEnabled = state
@@ -491,6 +491,43 @@ MainSection:AddButton({
     end
 })
 
+local triSpin = false
+local triConnection
+MainSection:AddToggle("TriangleSpin", {
+    Title = "helicopter Spin",
+    Description = "Spin in a helicopter pattern use with Fly",
+    Default = false,
+    Callback = function(state)
+        triSpin = state
+
+        if triSpin then
+            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+
+            local points = {
+                Vector3.new(10, 0, 0),
+                Vector3.new(-10, 0, 10),
+                Vector3.new(-10, 0, -10)
+            }
+
+            local index = 1
+
+            triConnection = RunService.Heartbeat:Connect(function()
+                if not triSpin then return end
+                local target = hrp.Position + points[index]
+                hrp.CFrame = CFrame.new(hrp.Position, target) + (CFrame.new() * (hrp.CFrame.LookVector * 3))
+                index = index + 1
+                if index > #points then index = 1 end
+            end)
+        else
+            if triConnection then
+                triConnection:Disconnect()
+                triConnection = nil
+            end
+        end
+    end
+})
+
 local PlayerSection = Tabs.Player:AddSection("Player Interactions")
 
 local playersList = {}
@@ -643,44 +680,6 @@ PlayerSection:AddButton({
         if SelectedPlayer and SelectedPlayer.Character then
             local hum = SelectedPlayer.Character:FindFirstChildOfClass("Humanoid")
             if hum then workspace.CurrentCamera.CameraSubject = hum end
-        end
-    end
-})
-
-local triSpin = false
-local triConnection
-
-PlayerSection:AddToggle("TriangleSpin", {
-    Title = "helicopter Spin",
-    Description = "Spin in a helicopter pattern use with Fly",
-    Default = false,
-    Callback = function(state)
-        triSpin = state
-
-        if triSpin then
-            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not hrp then return end
-
-            local points = {
-                Vector3.new(10, 0, 0),
-                Vector3.new(-10, 0, 10),
-                Vector3.new(-10, 0, -10)
-            }
-
-            local index = 1
-
-            triConnection = RunService.Heartbeat:Connect(function()
-                if not triSpin then return end
-                local target = hrp.Position + points[index]
-                hrp.CFrame = CFrame.new(hrp.Position, target) + (CFrame.new() * (hrp.CFrame.LookVector * 3))
-                index = index + 1
-                if index > #points then index = 1 end
-            end)
-        else
-            if triConnection then
-                triConnection:Disconnect()
-                triConnection = nil
-            end
         end
     end
 })
@@ -993,7 +992,7 @@ SettingsSection:AddButton({
 
 SettingsSection:AddButton({
     Title = "Mobile button",
-    Description = "allows for easier access to the script in mobile",
+    Description = "allows for easier access to the script in mobile (dont change the bind if you're on mobile)",
     Callback = function()
         loadstring(game:HttpGet(('https://pastefy.app/PHNwBnTN/raw'),true))()
     end
@@ -1028,7 +1027,7 @@ SettingsSection:AddButton({
 
 SettingsSection:AddButton({
     Title = "Server Hop",
-    Description = "Attempting to server hop",
+    Description = "Attempt to server hop",
     Callback = function()
         safeRunAsync(function()
             safeNotify("Server Hop", "Attempting to server hop", 5)
@@ -1042,7 +1041,7 @@ SettingsSection:AddButton({
     Description = "Save setting",
     Callback = function()
         pcall(function() SaveManager:Save() end)
-        safeNotify("Saving", "click afew more times", 3)
+        safeNotify("Saving", "Saved!", 3)
     end
 })
 
@@ -1144,7 +1143,7 @@ SettingsSection:AddButton({
     Title = "Test Notification",
     Description = "Send test notify",
     Callback = function()
-        safeNotify("YO", "easter egg🥚", 3)
+        safeNotify("easta", "easter egg🥚", 3)
     end
 })
 
@@ -1173,8 +1172,8 @@ ExtrasSection:AddButton({
 })
 
 ExtrasSection:AddButton({
-    Title = "Load Aimbot no 2",
-    Description = "Load aimbot script no 2",
+    Title = "Load Aimbot no. 2",
+    Description = "Load aimbot script no. 2",
     Callback = function()
         safeRunAsync(function()
             pcall(function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Hans-Mobile-Aimbot-64537"))() end)
