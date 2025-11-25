@@ -43,76 +43,6 @@ end
 
 local MainSection = Tabs.Main:AddSection("Features")
 
-MainSection:AddButton({
-    Title = "Load Reviz",
-    Description = "Loads Reviz admin script",
-    Callback = function()
-        safeRunAsync(function()
-            loadstring(game:HttpGet("https://gist.githubusercontent.com/princemiguel1234/af2a4841416e2aa41cce2017a14f2fff/raw/471718ec692954af5028cb8f922f00c66afd954d/Reviz%20Admin%20V2"))()
-        end)
-    end
-})
-
-MainSection:AddButton({
-    Title = "Load Infinite Yield",
-    Description = "Loads Infinite Yield admin script",
-    Callback = function()
-        safeRunAsync(function()
-            loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-        end)
-    end
-})
-
-MainSection:AddButton({
-    Title = "Load Kick Script (mobile)",
-    Description = "Loads Kick Script",
-    Callback = function()
-        safeRunAsync(function()
-            loadstring(game:HttpGet(('https://pastefy.app/xzlJBaV1/raw '),true))()
-        end)
-    end
-})
-
-MainSection:AddButton({
-    Title = "Load Kick Script (pc)",
-    Description = "Loads Kick Script",
-    Callback = function()
-        safeRunAsync(function()
-            loadstring(game:HttpGet("https://pastefy.app/wF2UZX5J/raw"))()
-        end)
-    end
-})
-
-MainSection:AddButton({
-    Title = "Load Minesweeper Script",
-    Description = "Loads Minesweeper Script",
-    Callback = function()
-        safeRunAsync(function()
-            loadstring(game:HttpGet(('https://pastefy.app/mwTErG3G/raw'),true))()
-        end)
-    end
-})
-
-MainSection:AddButton({
-    Title = "Load fling script",
-    Description = "Loads fling script",
-    Callback = function()
-        safeRunAsync(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/LiarRise/FLN-X/refs/heads/main/README.md"))()
-        end)
-    end
-})
-
-MainSection:AddButton({
-    Title = "Load invisible script",
-    Description = "Loads invis script",
-    Callback = function()
-        safeRunAsync(function()
-            loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))()
-        end)
-    end
-})
-
 local ESPEnabled = false
 local espCoroutine = nil
 
@@ -471,7 +401,7 @@ MainSection:AddButton({
 
 MainSection:AddButton({
     Title = "Auto Farm Make A Army",
-    Description = "Placeholder for auto farming",
+    Description = "for auto farming",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/MakeaArmy"))()
     end
@@ -488,6 +418,76 @@ MainSection:AddButton({
             vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
         end)
         safeNotify("AFK", "Anti-AFK enabled", 3)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load Reviz",
+    Description = "Loads Reviz admin script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet("https://gist.githubusercontent.com/princemiguel1234/af2a4841416e2aa41cce2017a14f2fff/raw/471718ec692954af5028cb8f922f00c66afd954d/Reviz%20Admin%20V2"))()
+        end)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load Infinite Yield",
+    Description = "Loads Infinite Yield admin script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        end)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load Kick Script (mobile)",
+    Description = "Loads Kick Script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet(('https://pastefy.app/xzlJBaV1/raw '),true))()
+        end)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load Kick Script (pc)",
+    Description = "Loads Kick Script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet("https://pastefy.app/wF2UZX5J/raw"))()
+        end)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load Minesweeper Script",
+    Description = "Loads Minesweeper Script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet(('https://pastefy.app/mwTErG3G/raw'),true))()
+        end)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load fling script",
+    Description = "Loads fling script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/LiarRise/FLN-X/refs/heads/main/README.md"))()
+        end)
+    end
+})
+
+MainSection:AddButton({
+    Title = "Load invisible script",
+    Description = "Loads invis script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))()
+        end)
     end
 })
 
