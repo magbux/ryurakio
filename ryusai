@@ -334,7 +334,7 @@ local function removeInvisibility()
 end
 
 MainSection:AddToggle("Invisible", {
-    Title = " Fake Invisible",
+    Title = "Fake Invisible",
     Description = "Finvisible and + no collide",
     Default = false,
     Callback = function(state)
@@ -404,6 +404,14 @@ MainSection:AddButton({
     Description = "for auto farming",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/MakeaArmy"))()
+    end
+})
+
+MainSection:AddButton({
+    Title = "Orbit",
+    Description = "???",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastefy.app/lBx9ZBR6/raw"))()
     end
 })
 
@@ -1272,8 +1280,8 @@ ExtrasSection:AddButton({
 })
 
 ExtrasSection:AddButton({
-    Title = "Banana peel",
-    Description = "BANANA PEEL",
+    Title = "weird nickle",
+    Description = "weird nickle that makes you fall",
     Callback = function()
             safeRunAsync(function()
             pcall(function() loadstring(game:HttpGet("https://pastefy.app/r0F7mBDe/raw"))() end)
