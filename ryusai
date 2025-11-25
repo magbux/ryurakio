@@ -998,6 +998,35 @@ SettingsSection:AddButton({
     end
 })
 
+SettingsSection:AddButton({
+    Title = "Reload Ryu-Hub",
+    Description = "reloads the hub (remove the old one first after you click it)",
+    Callback = function()
+        local url = "https://raw.githubusercontent.com/magbux/ryurakio/refs/heads/main/ryusai"
+
+        local Players = game:GetService("Players")
+        local CoreGui = game:GetService("CoreGui")
+        local localPlayer = Players.LocalPlayer
+
+        local function destroyMatches(parent)
+            for _,v in ipairs(parent:GetChildren()) do
+                local n = tostring(v.Name):lower()
+                if n:find("ryu") or n:find("ryusai") or n:find("ryuhub") then
+                    pcall(function() v:Destroy() end)
+                end
+            end
+        end
+
+        pcall(function() destroyMatches(CoreGui) end)
+
+        local pg = localPlayer:FindFirstChild("PlayerGui") or localPlayer:WaitForChild("PlayerGui")
+        pcall(function() destroyMatches(pg) end)
+
+        task.wait(0.15)
+        loadstring(game:HttpGet(url))()
+    end
+})
+
 SettingsSection:AddKeybind("ToggleGUI", {
     Title = "Toggle GUI",
     Description = "Bind to toggle hub",
