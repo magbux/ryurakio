@@ -1263,8 +1263,10 @@ ExtrasSection:AddButton({
     Title = "Load Dex",
     Description = "Load dark dex explorer",
     Callback = function()
-        safeRunAsync(function()
-            pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBX_DarkDex/main/source.lua"))() end)
+        spawn(function()
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBX_DarkDex/main/source.lua"))()
+            end)
         end)
     end
 })
@@ -1273,51 +1275,128 @@ ExtrasSection:AddButton({
     Title = "Remote Spy",
     Description = "Load remote spy",
     Callback = function()
-        safeRunAsync(function()
-            pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/CloneTrooper1019/Roblox-Client-Tracker/master/Client/Libraries/RemoteSpyHook.lua"))() end)
-        end)
-    end
-})
-
-ExtrasSection:AddButton({
-    Title = "weird peel",
-    Description = "weird banana peel that makes you slip and fall",
-    Callback = function()
-            safeRunAsync(function()
-            pcall(function() loadstring(game:HttpGet("https://pastefy.app/r0F7mBDe/raw"))() end)
-        end)
-    end
-})
-
-ExtrasSection:AddButton({
-    Title = "weird car",
-    Description = "car car car",
-    Callback = function()
-            safeRunAsync(function()
-            pcall(function() loadstring(game:HttpGet("https://pastefy.app/fXJTYKTn/raw"))() end)
-        end)
-    end
-})
-
-ExtrasSection:AddButton({
-    Title = "Drift",
-    Description = "go brr",
-    Callback = function()
-            safeRunAsync(function()
-            pcall(function() loadstring(game:HttpGet("https://pastefy.app/A7zFECHU/raw"))() end)
+        spawn(function()
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/CloneTrooper1019/Roblox-Client-Tracker/master/Client/Libraries/RemoteSpyHook.lua"))()
+            end)
         end)
     end
 })
 
 ExtrasSection:AddButton({
     Title = "breakdance",
-    Description = "use with wasd",
+    Description = "abit buggy but fun",
     Callback = function()
-            safeRunAsync(function()
-            pcall(function() loadstring(game:HttpGet("https://pastefy.app/rQgesUqd/raw"))() end)
-        end)
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local Workspace = game:GetService("Workspace")
+        local player = Players.LocalPlayer
+        local camera = Workspace.CurrentCamera
+
+        local function breakdance(char)
+            local hum = char:WaitForChild("Humanoid")
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            hum.PlatformStand = true
+            local att0 = Instance.new("Attachment", hrp)
+            local att1 = Instance.new("Attachment", hrp)
+            local align = Instance.new("AlignOrientation", hrp)
+            align.Attachment0 = att0
+            align.Attachment1 = att1
+            align.MaxTorque = math.huge
+            align.Responsiveness = 200
+            local vel = Instance.new("LinearVelocity", hrp)
+            vel.Attachment0 = att0
+            vel.MaxForce = math.huge
+            local force = Instance.new("VectorForce", hrp)
+            force.Attachment0 = att0
+            force.RelativeTo = Enum.ActuatorRelativeTo.World
+            local mass = hrp.AssemblyMass
+            RunService.Heartbeat:Connect(function()
+                local rootPos = hrp.Position
+                local move = hum.MoveDirection * hum.WalkSpeed * 2
+                att1.Orientation = att1.Orientation + Vector3.new(0,25,0)
+                local ray = Workspace:Raycast(rootPos, Vector3.new(0,-10,0))
+                if ray then
+                    local n = ray.Normal
+                    local target = ray.Position + n * 2
+                    att1.WorldCFrame = CFrame.lookAt(target, target + camera.CFrame.LookVector, n)
+                    local tangent = move - move:Dot(n) * n
+                    vel.VectorVelocity = tangent
+                    force.Force = -n * mass * Workspace.Gravity * 0.7
+                else
+                    vel.VectorVelocity *= 0.9
+                    force.Force = Vector3.new()
+                end
+            end)
+        end
+
+        local char = player.Character or player.CharacterAdded:Wait()
+        breakdance(char)
     end
 })
+
+ExtrasSection:AddButton({
+    Title = "Weird Nickle",
+    Description = "weird nickle that makes you fall",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local tool = Instance.new("Tool")
+        tool.Name = "Weird Nickle"
+        tool.RequiresHandle = true
+        tool.CanBeDropped = false
+        local handle = Instance.new("Part")
+        handle.Name = "Handle"
+        handle.Size = Vector3.new(0.5,0.1,0.5)
+        handle.Shape = Enum.PartType.Cylinder
+        handle.BrickColor = BrickColor.new("Bright yellow")
+        handle.Material = Enum.Material.SmoothPlastic
+        handle.TopSurface = Enum.SurfaceType.Studs
+        handle.Orientation = Vector3.new(0,0,90)
+        handle.Parent = tool
+
+        local function createNickle(position)
+            local nickle = Instance.new("Part")
+            nickle.Name = "WeirdNickle"
+            nickle.Size = Vector3.new(0.1,1,1)
+            nickle.Shape = Enum.PartType.Cylinder
+            nickle.BrickColor = BrickColor.new("Bright yellow")
+            nickle.Material = Enum.Material.SmoothPlastic
+            nickle.TopSurface = Enum.SurfaceType.Studs
+            nickle.Position = position
+            nickle.Orientation = Vector3.new(0,0,90)
+            nickle.Anchored = true
+            nickle.CanCollide = false
+            nickle.Parent = workspace
+            nickle.Touched:Connect(function(hit)
+                local humanoidHit = hit.Parent:FindFirstChildOfClass("Humanoid")
+                if humanoidHit then
+                    humanoidHit.Sit = true
+                    wait(0.1)
+                end
+            end)
+            return nickle
+        end
+
+        tool.Activated:Connect(function()
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local pos = character.HumanoidRootPart.Position - Vector3.new(0,3,0)
+                createNickle(pos)
+            end
+        end)
+
+        tool.Parent = player:WaitForChild("Backpack")
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "cool car",
+    Description = "cred to owner!",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AstraOutlight/my-scripts/refs/heads/main/fe%20car%20v3"))()
+    end
+})
+
 
 ExtrasSection:AddSlider("VehicleSpeed", {
     Title = "Vehicle Speed",
@@ -1327,7 +1406,9 @@ ExtrasSection:AddSlider("VehicleSpeed", {
     Max = 500,
     Rounding = 1,
     Callback = function(value)
-        safeNotify("Vehicle", "Vehicle speed set to " .. tostring(value), 3)
+        if safeNotify then
+            safeNotify("Vehicle", "Vehicle speed set to " .. tostring(value), 3)
+        end
     end
 })
 
@@ -1351,4 +1432,6 @@ if getgenv().AP_AutoLoad == game.PlaceId then
     end)
 end
 
-safeNotify("quick reminder","mobile support isnt the best in this script", 6)
+if safeNotify then
+    safeNotify("quick reminder","mobile support isnt the best in this script", 6)
+end
