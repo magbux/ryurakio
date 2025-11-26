@@ -943,7 +943,7 @@ local SettingsSection = Tabs.Settings:AddSection("Game Settings")
 
 SettingsSection:AddToggle("AutoLoadScript", {
     Title = "Auto Load Script",
-    Description = "Automatically loads the script on rejoin",
+    Description = "Automatically loads the script on rejoin (but be careful)",
     Default = true,
     Callback = function(state)
         if state then
