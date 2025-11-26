@@ -15,7 +15,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Window = Fluent:CreateWindow({
     Title = "Ryusai-Hub🚬",
-    SubTitle = "ryusai hub🃏",
+    SubTitle = "ryu/sai hub🃏",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -1000,7 +1000,7 @@ SettingsSection:AddButton({
 
 SettingsSection:AddButton({
     Title = "Mobile button",
-    Description = "allows for easier access to the script in mobile (dont change the bind if you're on mobile)",
+    Description = "allows for easier access to the script in mobile (not recommended)",
     Callback = function()
         loadstring(game:HttpGet(('https://pastefy.app/PHNwBnTN/raw'),true))()
     end
@@ -1341,4 +1341,4 @@ if getgenv().AP_AutoLoad == game.PlaceId then
     end)
 end
 
-safeNotify("reminder", "don't change the bind if you're on mobile", 6)
+safeNotify("yo","🌀", 6)
