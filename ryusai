@@ -1301,10 +1301,20 @@ ExtrasSection:AddButton({
 
 ExtrasSection:AddButton({
     Title = "Drift",
-    Description = " go brr",
+    Description = "go brr",
     Callback = function()
             safeRunAsync(function()
             pcall(function() loadstring(game:HttpGet("https://pastefy.app/A7zFECHU/raw"))() end)
+        end)
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "breakdance",
+    Description = "use with wasd",
+    Callback = function()
+            safeRunAsync(function()
+            pcall(function() loadstring(game:HttpGet("https://pastefy.app/rQgesUqd/raw"))() end)
         end)
     end
 })
@@ -1341,4 +1351,4 @@ if getgenv().AP_AutoLoad == game.PlaceId then
     end)
 end
 
-safeNotify("yo","🌀", 6)
+safeNotify("quick reminder","mobile support isnt the best in this script", 6)
