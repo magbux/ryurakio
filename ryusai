@@ -1008,7 +1008,7 @@ SettingsSection:AddButton({
 
 SettingsSection:AddButton({
     Title = "Reload Ryu-Hub",
-    Description = "reloads the hub (remove the old one first after you click it)",
+    Description = "reloads the hub (remove the old one after you click it)",
     Callback = function()
         local url = "https://raw.githubusercontent.com/magbux/ryurakio/refs/heads/main/ryusai"
 
@@ -1281,7 +1281,7 @@ ExtrasSection:AddButton({
 
 ExtrasSection:AddButton({
     Title = "weird nickle",
-    Description = "weird nickle that makes you fall",
+    Description = "weird nickle that makes you slip and fall",
     Callback = function()
             safeRunAsync(function()
             pcall(function() loadstring(game:HttpGet("https://pastefy.app/r0F7mBDe/raw"))() end)
