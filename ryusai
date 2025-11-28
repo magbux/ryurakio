@@ -14,8 +14,8 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
-    Title = "Ryusai-Hub🚬",
-    SubTitle = "ryu/sai hub😑",
+    Title = "Ryu/sai-Hub🤖",
+    SubTitle = "ryu/sai hub",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -466,6 +466,16 @@ MainSection:AddButton({
 })
 
 MainSection:AddButton({
+    Title = "Load command script",
+    Description = "Loads da supa cool command script",
+    Callback = function()
+        safeRunAsync(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/magbux/ryu-command-hub/refs/heads/main/ryu%20commandment"))()
+        end)
+    end
+})
+
+MainSection:AddButton({
     Title = "Load Kick Script (mobile)",
     Description = "Loads Kick Script",
     Callback = function()
@@ -879,6 +889,17 @@ MiscSection:AddButton({
 
 local Spam = false
 local spamThread = nil
+local spamMessage = "YUKKY WUKKY"
+
+MiscSection:AddInput("SpamMessage", {
+    Title = "Spam Message",
+    Description = "Enter message to spam",
+    Default = "YUKKY WUKKY",
+    Placeholder = "Type your message...",
+    Callback = function(value)
+        spamMessage = value
+    end
+})
 
 MiscSection:AddToggle("ChatSpam", {
     Title = "Chat Spam",
@@ -892,7 +913,7 @@ MiscSection:AddToggle("ChatSpam", {
                     pcall(function()
                         local tcs = game:GetService("TextChatService")
                         if tcs and tcs.TextChannels and tcs.TextChannels.RBXGeneral then
-                            tcs.TextChannels.RBXGeneral:SendAsync("YUKKY WUKKY")
+                            tcs.TextChannels.RBXGeneral:SendAsync(spamMessage)
                         end
                     end)
                     wait(1)
@@ -1407,7 +1428,7 @@ ExtrasSection:AddButton({
 
 ExtrasSection:AddButton({
     Title = "speed n gravity coil",
-    Description = "un",
+    Description = "SPEED O SOUND SONIC",
     Callback = function()
         loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Gravity-and-speed-coils-14249"))()
     end
@@ -1415,7 +1436,7 @@ ExtrasSection:AddButton({
 
 ExtrasSection:AddButton({
     Title = "flashlight",
-    Description = "murky water",
+    Description = "Batman",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/lumpiasallad/Flashlight-Script-roblox/refs/heads/main/Flashlight.lua"))()
     end
