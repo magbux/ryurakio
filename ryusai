@@ -431,7 +431,7 @@ MainSection:AddButton({
 
 MainSection:AddButton({
     Title = "R6/R15 Energize",
-    Description = "yoo",
+    Description = "what shall i add here?",
     Callback = function()
         loadstring(game:HttpGet(('https://pastebin.com/raw/1p6xnBNf'),true))()
     end
@@ -439,7 +439,7 @@ MainSection:AddButton({
 
 MainSection:AddButton({
     Title = "killer animation",
-    Description = "yoo",
+    Description = "name explains it",
     Callback = function()
         loadstring(game:HttpGet("https://pastefy.app/riYch0rX/raw"))()
     end
