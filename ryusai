@@ -1406,10 +1406,26 @@ ExtrasSection:AddButton({
 })
 
 ExtrasSection:AddButton({
-    Title = "cool car",
-    Description = "cred to owner!",
+    Title = "speed n gravity coil",
+    Description = "un",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AstraOutlight/my-scripts/refs/heads/main/fe%20car%20v3"))()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Gravity-and-speed-coils-14249"))()
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "flashlight",
+    Description = "murky water",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/lumpiasallad/Flashlight-Script-roblox/refs/heads/main/Flashlight.lua"))()
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "player info",
+    Description = "not accurate",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/QcyXtrws", true))()
     end
 })
 
