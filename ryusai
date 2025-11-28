@@ -15,7 +15,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Window = Fluent:CreateWindow({
     Title = "Ryusai-Hub🚬",
-    SubTitle = "ryu/sai hub🃏",
+    SubTitle = "ryu/sai hub😑",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -409,7 +409,7 @@ MainSection:AddButton({
 
 MainSection:AddButton({
     Title = "Orbit",
-    Description = "???",
+    Description = "orbit like a planet",
     Callback = function()
         loadstring(game:HttpGet("https://pastefy.app/lBx9ZBR6/raw"))()
     end
@@ -426,6 +426,22 @@ MainSection:AddButton({
             vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
         end)
         safeNotify("AFK", "Anti-AFK enabled", 3)
+    end
+})
+
+MainSection:AddButton({
+    Title = "R6/R15 Energize",
+    Description = "yoo",
+    Callback = function()
+        loadstring(game:HttpGet(('https://pastebin.com/raw/1p6xnBNf'),true))()
+    end
+})
+
+MainSection:AddButton({
+    Title = "killer animation",
+    Description = "yoo",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastefy.app/riYch0rX/raw"))()
     end
 })
 
@@ -1397,6 +1413,21 @@ ExtrasSection:AddButton({
     end
 })
 
+ExtrasSection:AddButton({
+    Title = "fake lag",
+    Description = "needed to add more buttons in this tab lol",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fake-lag-41217"))()
+    end
+})
+
+ExtrasSection:AddButton({
+    Title = "ball roll",
+    Description = "same thing vro ☝️",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/BZr9bGDy"))()
+    end
+})
 
 ExtrasSection:AddSlider("VehicleSpeed", {
     Title = "Vehicle Speed",
